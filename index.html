@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Smart Campus Portal</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.10.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.10.1/core.js"></script>
+    <link rel="stylesheet" href="color.css">
+</head>
+<body>
+    <h1>Smart Campus Portal</h1>
+
+    <input id="sid" placeholder="Student ID">
+    <input id="name" placeholder="Name">
+    <input id="age" type="number" placeholder="Age">
+    <input id="course" placeholder="Course">
+    <input id="marks" placeholder="Enter 3 marks: 90,85,92">
+    
+    <div class="btn-group">
+        <button id="register_btn">Register</button>
+        <button id="display_btn">Display All</button>
+        <button id="sort_btn">Sort by Name</button>
+        <button id="numpy_btn">NumPy Analysis</button>
+        <button id="pandas_btn">Pandas Report</button>
+        <button id="plot_btn">Plot Grades</button>
+    </div>
+
+    <div id="output">Loading PyScript... This takes ~20s with matplotlib.</div>
+    <div id="plot"></div>
+
+  <py-config>
+    packages = ["numpy", "pandas", "matplotlib"]
+</py-config>
+    
+    <script type="py" src="./main.py"></script>
+</body>
+</html>
