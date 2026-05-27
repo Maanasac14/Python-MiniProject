@@ -247,9 +247,6 @@ def init():
     document.getElementById('fee_btn').addEventListener('click', create_proxy(calculate_fee_ui))
     document.getElementById('search_btn').addEventListener('click', create_proxy(search_student))
     document.getElementById('enroll_btn').addEventListener('click', create_proxy(enroll_course))
-    document.getElementById('save_btn').addEventListener('click', create_proxy(save_to_json))
-    document.getElementById('load_btn').addEventListener('click', create_proxy(load_from_json))
-    document.getElementById('file_input').addEventListener('change', create_proxy(handle_file_load))
     
     print_out("✓ Smart Campus Portal Ready\n\nAll 8 modules loaded\n\nFirst load takes ~20s due to matplotlib")
 
