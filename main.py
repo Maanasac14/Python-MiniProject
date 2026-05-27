@@ -149,7 +149,7 @@ def plot_grades(event):
     # Render to page
     display(fig, target="plot")
     print_out(f"✓ Plotted {len(students)} students. Green=80+, Orange=60+, Red=<60")
-# ---------------- SEARCH STUDENT - Module 4 ----------------
+
 def search_student(event):
     try:
         sid = document.getElementById('search_sid').value.strip()
@@ -173,118 +173,9 @@ def search_student(event):
     except Exception as e:
         print_out(f"✗ ERROR: {str(e)}")
 
-# ---------------- COURSE ENROLLMENT - Module 2 ----------------
-def enroll_course(event):
-    try:
-        # Using prompt since we don't have separate inputs in HTML
-        sid = document.getElementById('sid').value.strip()
-        new_course = document.getElementById('course').value.strip()
-        
-        if not sid or not new_course:
-            raise ValueError("Enter Student ID in 'sid' field and New Course in 'course' field, then click Update Course")
-        
-        found = False
-        for s in students:
-            if s.sid.lower() == sid.lower():
-                old_course = s.course
-                s.course = new_course
-                result = f"✓ COURSE UPDATED\n\nStudent: {s.name} ({s.sid})\nOld Course: {old_course}\nNew Course: {new_course}"
-                print_out(result)
-                clear_plot()
-                found = True
-                break
-        
-        if not found:
-            print_out(f"✗ Student ID '{sid}' not found")
-            
-        document.getElementById('sid').value = ""
-        document.getElementById('course').value = ""
-    except Exception as e:
-        print_out(f"✗ ERROR: {str(e)}")
-def save_to_json(event):
-    if not students:
-        print_out("No students to save. Register students first.")
-        return
-    
-    try:
-        data = []
-        for s in students:
-            data.append({
-                'ID': s.sid,
-                'Name': s.name,
-                'Age': s.age,
-                'Course': s.course,
-                'Marks': s.marks,
-                'Average': round(s.average, 2),
-                'Grade': s.grade
-            })
-        
-        json_str = json.dumps(data, indent=2)
-        
-        # Create download link
-        from js import Blob, URL, document
-        blob = Blob.new([json_str], {type: 'application/json'})
-        url = URL.createObjectURL(blob)
-        
-        a = document.createElement('a')
-        a.href = url
-        a.download = 'students.json'
-        a.click()
-        URL.revokeObjectURL(url)
-        
-        print_out(f"✓ SUCCESS: Saved {len(students)} students to students.json\n\nFile downloaded to your Downloads folder")
-        clear_plot()
-    except Exception as e:
-        print_out(f"✗ ERROR: {str(e)}")
-
-def load_from_json(event):
-    file_input = document.getElementById('file_input')
-    file_input.click()
-
-def handle_file_load(event):
-    try:
-        file = event.target.files.item(0)
-        if not file:
-            return
-            
-        reader = js.FileReader.new()
-        
-        def on_load(e):
-            try:
-                content = reader.result
-                data = json.loads(content)
-                
-                global students
-                students = []
-                for item in data:
-                    student = Student(
-                        item['ID'], 
-                        item['Name'], 
-                        item['Age'], 
-                        item['Course'], 
-                        item['Marks']
-                    )
-                    students.append(student)
-                
-                print_out(f"✓ SUCCESS: Loaded {len(students)} students from file\n\nClick 'Display All' to view")
-                clear_plot()
-            except Exception as e:
-                print_out(f"✗ ERROR loading file: {str(e)}")
-        
-        reader.onload = create_proxy(on_load)
-        reader.readAsText(file)
-        
-    except Exception as e:
-        print_out(f"✗ ERROR: {str(e)}")
-def calculate_fee(tuition_fee, lab_fee=2000, transport_fee=1000):
-    total = tuition_fee + lab_fee + transport_fee
-    return total
 
 def enroll_course(event):
-    """
-    Update course for existing student - Module 2
-    Usage: Enter SID + New Course in the form, then click Update Course
-    """
+
     try:
         sid = document.getElementById('sid').value.strip()
         new_course = document.getElementById('course').value.strip()
