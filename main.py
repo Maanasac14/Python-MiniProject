@@ -12,7 +12,7 @@ import matplotlib
 matplotlib.use("agg")
 import matplotlib.pyplot as plt
 from pyscript import display
-
+t=[]
 students = []
 
 class Student:
@@ -51,17 +51,21 @@ def register_student(event):
         course = document.getElementById('course').value.strip()
         marks = [float(m.strip()) for m in document.getElementById('marks').value.split(',')]
         if age < 10 or age > 100: raise ValueError("Age must be between 10-100")
-        if any(char.isdigit() for char in course): raise ValueError("Course should not contain numbers")
-        if not all(0 <= m <= 100 for m in marks): raise ValueError("Marks must be 0-100")
-        if not all([sid, name, course]): raise ValueError("All fields required")
+        if any(char.isdigit() for char in course): 
+            raise ValueError("Course should not contain numbers")
+        if not all(0 <= m <= 100 for m in marks): 
+            raise ValueError("Marks must be 0-100")
+        if not all([sid, name, course]):
+            raise ValueError("All fields required")
         if len(marks) != 3: raise ValueError("Enter exactly 3 marks")
-        if any(s.sid == sid for s in students): raise ValueError("Student ID exists")
+        if any(s.sid == sid for s in students): 
+            raise ValueError("Student ID exists")
 
         student = Student(sid, name, age, course, marks)
         students.append(student)
         print_out(f"✓ SUCCESS: Student Registered\n\n{student.display()}\n\nTotal Students: {len(students)}")
         clear_plot()
-        
+        t.append(document.getElementById('tuition').value)
         for id in ['sid', 'name', 'age', 'course', 'marks','tuition']:
             document.getElementById(id).value = ""
     except Exception as e:
@@ -215,27 +219,40 @@ New Course: {new_course}"""
     except Exception as e:
         print_out(f"✗ ERROR: {str(e)}")
 
-def calculate_fee_ui(event):
-    try:
-        tuition_str = document.getElementById('tuition').value.strip()
-        if not tuition_str:
-            raise ValueError("Enter tuition fee")
-            
-        tuition = float(tuition_str)
-        total = calculate_fee(tuition, 2000, 1000)
-        
-        result = f"""FEE CALCULATION
+def calculate_fee(tuition, lab_fee, transport_fee):
+    return tuition + lab_fee + transport_fee
 
-Tuition Fee:    Rs. {tuition:>10,.2f}
-Lab Fee:        Rs. {2000:>10,.2f}
-Transport Fee:  Rs. {1000:>10,.2f}
-{'':->30}
-Total Fee:      Rs. {total:>10,.2f}"""
+
+def calculate_fee_ui(event):
+    event.preventDefault()
+    try:
+        if not t:
+            raise ValueError("No students registered yet")
+        
+        result = "FEE CALCULATION FOR ALL STUDENTS\n\n"
+        grand_total = 0
+        
+        for i, tuition_str in enumerate(t, 1):  # t contains strings
+            tuition = float(tuition_str.strip())  # convert "50000" to 50000.0
+            total = calculate_fee(tuition, 2000, 1000)
+            grand_total += total
+            
+            result += f"Student {i}\n"
+            result += f"Tuition Fee:    Rs. {tuition:>10,.2f}\n"
+            result += f"Lab Fee:        Rs. {2000:>10,.2f}\n"
+            result += f"Transport Fee:  Rs. {1000:>10,.2f}\n"
+            result += f"{'-'*30}\n"
+            result += f"Total:          Rs. {total:>10,.2f}\n\n"
+        
+        result += f"{'='*30}\n"
+        result += f"GRAND TOTAL:    Rs. {grand_total:>10,.2f}"
         
         print_out(result)
         clear_plot()
+
     except Exception as e:
         print_out(f"✗ ERROR: {str(e)}")
+
 def init():
     # Bind all 10 buttons
     document.getElementById('register_btn').addEventListener('click', create_proxy(register_student))
