@@ -1,43 +1,102 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Smart Campus Portal</title>
-    <link rel="stylesheet" href="https://pyscript.net/releases/2024.10.1/core.css">
-    <script type="module" src="https://pyscript.net/releases/2024.10.1/core.js"></script>
-    <link rel="stylesheet" href="color.css">
-</head>
-<body>
-    <h1>Smart Campus Portal</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Smart Campus Information System</title>
+    <link rel="stylesheet" href="color.css" />
+    <link
+      rel="stylesheet"
+      href="https://pyscript.net/releases/2024.1.1/core.css"
+    />
+    <script
+      type="module"
+      src="https://pyscript.net/releases/2024.1.1/core.js"
+    ></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Smart Campus Information System</h1>
+      <div class="main-grid">
+        <div class="card">
+          <h3>Student Management</h3>
+          <div id="normal_mode">
+            <input type="text" id="sid" placeholder="Student ID" />
+            <input type="text" id="name" placeholder="Student Name" />
+            <input type="number" id="age" placeholder="Age" />
+            <input type="text" id="course" placeholder="Course Name" />
+            <input type="number" id="mark1" placeholder="Mark 1" />
+            <input type="number" id="mark2" placeholder="Mark 2" />
+            <input type="number" id="mark3" placeholder="Mark 3" />
+            <input type="number" id="tuition_fee" placeholder="Tuition Fee" />
 
-    <input id="sid" placeholder="Student ID">
-    <input id="name" placeholder="Name">
-    <input id="age" type="number" placeholder="Age">
-    <input id="course" placeholder="Course">
-    <input id="marks" placeholder="Enter 3 marks: 90,85,92">
-    <input id="tuition" type="number" placeholder="Tuition Fee">
-     <input id="search_sid" placeholder="Search by Student ID">
-    
-    <div class="btn-group">
-        <button id="register_btn">Register</button>
-        <button id="display_btn">Display All</button>
-        <button id="sort_btn">Sort by Name</button>
-        <button id="numpy_btn">NumPy Analysis</button>
-        <button id="pandas_btn">Pandas Report</button>
-        <button id="plot_btn">Plot Grades</button>
-         <button id="fee_btn">Calculate Fee</button>
-    <button id="search_btn">Search Student</button>
-    <button id="enroll_btn">Update Course</button>
+            <div class="btn-section">
+              <p class="section-label">CRUD Operations</p>
+              <div class="btn-group">
+                <button id="register_btn">Register Student</button>
+                <button id="display_btn">Display All</button>
+                <button id="show_search_btn">Search Student</button>
+                <button id="sort_btn">Sort by Name</button>
+                <button id="show_update_btn">Update Course</button>
+                <button id="fee_btn">Calculate Fee</button>
+              </div>
+            </div>
+
+            <div class="btn-section">
+              <p class="section-label">File & Data Analysis</p>
+              <div class="btn-group">
+                <button id="save_btn">Save Records</button>
+                <button id="pandas_btn">Pandas Analysis</button>
+                <button id="numpy_btn">NumPy Analysis</button>
+                <button id="plot_btn">Visualize Data</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEARCH POPUP MODE -->
+          <div id="search_mode" style="display: none">
+            <p class="mode-label" style="color: #2196f3; font-weight: bold">
+              Search Mode
+            </p>
+            <input type="text" id="search_sid" placeholder="Enter Student ID" />
+            <div class="btn-group">
+              <button id="search_now_btn">Search Now</button>
+              <button id="cancel_search_btn">Cancel</button>
+            </div>
+          </div>
+
+          <!-- UPDATE POPUP MODE -->
+          <div id="update_mode" style="display: none">
+            <p class="mode-label" style="color: #ff9800; font-weight: bold">
+              Update Course Mode
+            </p>
+            <input type="text" id="update_sid" placeholder="Enter Student ID" />
+            <input
+              type="text"
+              id="update_course"
+              placeholder="Enter New Course Name"
+            />
+            <div class="btn-group">
+              <button id="confirm_update_btn">Confirm Update</button>
+              <button id="cancel_update_btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+        <div class="card output-card">
+          <h3>Output</h3>
+          <div id="output">Loading packages... Wait 30-40 sec</div>
+        </div>
+      </div>
     </div>
 
-    <div id="output">Loading PyScript... This takes ~20s with matplotlib.</div>
-    <div id="plot"></div>
+    <!-- GRAPH MODAL -->
+    <div id="graphModal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="closeModal">&times;</span>
+        <h3>Student Performance Graph</h3>
+        <div id="graph_output"></div>
+      </div>
+    </div>
 
-  <py-config>
-    packages = ["numpy", "pandas", "matplotlib"]
-</py-config>
-    
-    <script type="py" src="./main.py"></script>
-</body>
+    <script type="py" src="./main.py" config="./pyscript.json"></script>
+  </body>
 </html>
