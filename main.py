@@ -1,6 +1,9 @@
 from pyscript import when, display
 from js import document, console
 from pyodide.ffi import create_proxy
+import csv
+import io
+from js import Blob, URL, document
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -43,6 +46,57 @@ class Student:
         return {'ID': self.sid, 'Name': self.name, 'Age': self.age, 'Course': self.course, 'Marks': self.marks, 'Grade': self.grade}
 
 # ---------------- HELPER FUNCTIONS ----------------
+    
+
+
+def generate_csv_report(e=None):
+    try:
+        out = document.getElementById("output")
+        
+        if not students:
+            out.innerText = "❌ No students registered. Add students first."
+            return
+            
+        FEE_STRUCTURE = {
+            'BCA': 50000, 'BCOM': 45000, 'BBA': 55000, 
+            'BSC': 40000, 'OTHER': 35000
+        }
+        
+        # Create CSV in memory instead of file
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(['ID', 'Name', 'Age', 'Course', 'Grade', 'Average_Marks', 'Fee'])
+        
+        for s in students:
+            avg = sum(s.marks) / len(s.marks)
+            course_key = s.course.upper()
+            fee = FEE_STRUCTURE.get('BCA') if 'BCA' in course_key else \
+                  FEE_STRUCTURE.get('BCOM') if 'BCOM' in course_key else \
+                  FEE_STRUCTURE.get('BBA') if 'BBA' in course_key else \
+                  FEE_STRUCTURE.get('BSC') if 'BSC' in course_key else \
+                  FEE_STRUCTURE.get('OTHER')
+                  
+            writer.writerow([s.sid, s.name, s.age, s.course, s.grade, round(avg,2), fee])
+        
+        # Create download link
+        csv_content = output.getvalue()
+        blob = Blob.new([csv_content], {"type": "text/csv"})
+        url = URL.createObjectURL(blob)
+        
+        link = document.getElementById("download_link")
+        link.href = url
+        link.download = "student_report.csv"
+        link.click()  # Auto-download
+        
+        out.innerText = f"✅ CSV report generated! Downloaded {len(students)} records."
+        
+    except Exception as err:
+        document.getElementById("output").innerText = f"ERROR: {err}"
+        console.log(str(err))
+
+# ------------------ BUTTON BINDINGS ------------------
+@when("click", "#csv_btn")
+def _7(e): generate_csv_report(e)
 def print_output(text, is_error=False):
     cls = "error" if is_error else ""
     document.querySelector("#output").innerHTML = f"<pre class='{cls}'>{text}</pre>"
@@ -72,6 +126,26 @@ def download_file(filename, content):
     URL.revokeObjectURL(url)
 
 # ---------------- 1. REGISTER WITH FULL EXCEPTION HANDLING ----------------
+from js import FileReader
+from pyodide.ffi import create_proxy
+
+def scan_uploaded_files(e=None):
+    out = document.getElementById("output")
+    files = document.getElementById("file_input").files
+    
+    if files.length == 0:
+        out.innerText = "❌ No files selected. Choose files first."
+        return
+    
+    report = f"--- UPLOADED FILES: {files.length} ---\n\n"
+    for i in range(files.length):
+        f = files.item(i)
+        report += f"File: {f.name}\n"
+        report += f"Size: {f.size} bytes\n"
+        report += f"Type: {f.type}\n{'-'*30}\n"
+    
+    out.innerText = report
+
 def register_student(event):
     document.querySelector("#output").innerHTML = ""
     try:
@@ -242,7 +316,6 @@ def calculate_fee(e=None):
         document.getElementById("output").innerText = f"ERROR: {err}"
         console.log(str(err))
 
-# ------------------ BUTTON BINDINGS ------------------
 
 # ---------------- 7. SAVE RECORDS ----------------
 def save_to_file(event):
@@ -256,6 +329,39 @@ def save_to_file(event):
         print_output("Student records saved successfully!\nFile downloaded as students.json")
     except InvalidStudentError as e:
         print_output(f"Custom Exception: {e}", is_error=True)
+
+def update_file_count(e=None):
+    files = document.getElementById("file_input").files
+    count_span = document.getElementById("file_count")
+    
+    if files.length == 0:
+        count_span.innerText = "No files selected"
+    else:
+        count_span.innerText = f"{files.length} file{'s' if files.length > 1 else ''} selected"
+
+def scan_uploaded_files(e=None):
+    out = document.getElementById("output")
+    files = document.getElementById("file_input").files
+    
+    if files.length == 0:
+        out.innerText = "❌ No files selected."
+        return
+    
+    report = f"=== DIRECTORY SCAN RESULT ===\n"
+    report += f"Total Files Selected: {files.length}\n"
+    report += f"{'='*40}\n\n"
+    
+    for i in range(files.length):
+        f = files.item(i)
+        size_kb = round(f.size / 1024, 2)
+        report += f"📄 {f.name}\n"
+        report += f"   Size: {size_kb} KB\n"
+        report += f"   Type: {f.type or 'Unknown'}\n\n"
+    
+    out.innerText = report
+
+
+
 
 
 
@@ -375,5 +481,10 @@ def _11(e): numpy_analysis(e)
 def _12(e): pandas_analysis(e)
 @when("click", "#plot_btn")
 def _13(e): visualize_data(e)
+@when("click", "#csv_btn")
+def _7(e): generate_csv_report(e)
+@when("change", "#file_input")
+def _auto_scan(e): 
+    scan_uploaded_files(e)
 
 print_output("Ready! All modules loaded with exception handling.\nEnter data and test.")
