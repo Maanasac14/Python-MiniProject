@@ -183,10 +183,10 @@ button:hover {
 }
 
 /* Button Colors */
-#register_btn { background: linear-gradient(135deg, #10b981, #059669); color: white; }
-#display_btn, #show_search_btn, #sort_btn { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+#register_btn,#display_btn { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+ #show_search_btn, #sort_btn { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
 #show_update_btn, #fee_btn { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
-#save_btn { background: linear-gradient(135deg, #f97316, #ea580c); color: white; }
+#save_btn,#csv_btn{ background: linear-gradient(135deg, #f97316, #ea580c); color: white; }
 #numpy_btn, #pandas_btn, #plot_btn { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
 .btn-section {
     margin: 16px 0 8px 0;
@@ -214,7 +214,17 @@ button:hover {
     gap: 12px;
     flex-wrap: wrap;
 }
-
+.grid-container:last-of-type button:last-child {
+    grid-column: 1 / -1; 
+    justify-self: center;
+    max-width: 50%;  
+}
+#plot_btn{ 
+    grid-column: 1 / -1;
+    justify-self: center;
+    max-width: 50%;
+       background: linear-gradient(135deg, #f63bf0, #c325eb);
+}
 #file_input {
     color: #aaa;
     font-size: 14px;
