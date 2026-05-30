@@ -1,10 +1,13 @@
-from pyscript import document, when, display
-from js import console, Blob, URL, document as jsdoc
+from pyscript import when, display
+from js import document, console
+from pyodide.ffi import create_proxy
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
+matplotlib.use("agg")
 import json
+
 matplotlib.use("agg")
 
 # ---------------- GLOBAL VARIABLES ----------------
@@ -197,22 +200,49 @@ def update_course_handler(event):
         show_normal_mode()
 
 # ---------------- 6. FEE CALCULATION ----------------
-def calculate_fee(tuition_fee, lab_fee=2000, transport_fee=1000):
-    return tuition_fee + lab_fee + transport_fee
 
-def fee_handler(event):
-    document.querySelector("#output").innerHTML = ""
+
+students = [] # Make sure this global list exists at top
+
+def calculate_fee(e=None):
     try:
-        tuition_str = get_val("tuition_fee").strip()
-        if not tuition_str:
-            raise ValueError("Tuition fee cannot be empty")
-        tuition = float(tuition_str)
-        if tuition <= 0:
-            raise ValueError("Tuition fee must be positive")
-        total_fee = calculate_fee(tuition)
-        print_output(f"=== Fee Calculation ===\nTuition Fee: ₹{tuition}\nLab Fee: ₹2000\nTransport Fee: ₹1000\n{'-'*25}\nTotal Fee: ₹{total_fee}")
-    except ValueError as e:
-        print_output(f"Invalid input! {e}", is_error=True)
+        out = document.getElementById("output")
+        
+        if not students:
+            out.innerText = "❌ No students registered yet. Add students first."
+            return
+        
+        FEE_STRUCTURE = {
+            'BCA': 50000, 'BCOM': 45000, 'BBA': 55000, 
+            'BSC': 40000, 'OTHER': 35000
+        }
+        
+        report = "--- STANDARD FEE STRUCTURE ---\n"
+        for course, amount in FEE_STRUCTURE.items():
+            report += f"{course:<8} : ₹{amount:,}\n"
+        
+        report += f"\n{'='*60}\n--- INDIVIDUAL STUDENT FEE CALCULATION ---\n\n"
+        
+        total = 0
+        for s in students:
+            course_key = s.course.upper()
+            fee = FEE_STRUCTURE.get('BCA') if 'BCA' in course_key else \
+                  FEE_STRUCTURE.get('BCOM') if 'BCOM' in course_key else \
+                  FEE_STRUCTURE.get('BBA') if 'BBA' in course_key else \
+                  FEE_STRUCTURE.get('BSC') if 'BSC' in course_key else \
+                  FEE_STRUCTURE.get('OTHER')
+            
+            total += fee
+            report += f"ID: {s.sid:<5} | Name: {s.name:<15} | Course: {s.course:<10} | Fee: ₹{fee:,}\n"
+        
+        report += f"\n{'='*60}\nTOTAL STUDENTS: {len(students)}\nGRAND TOTAL: ₹{total:,}\n{'='*60}"
+        out.innerText = report
+        
+    except Exception as err:
+        document.getElementById("output").innerText = f"ERROR: {err}"
+        console.log(str(err))
+
+# ------------------ BUTTON BINDINGS ------------------
 
 # ---------------- 7. SAVE RECORDS ----------------
 def save_to_file(event):
@@ -227,32 +257,7 @@ def save_to_file(event):
     except InvalidStudentError as e:
         print_output(f"Custom Exception: {e}", is_error=True)
 
-# ---------------- EXCEPTION DEMO ----------------
-def exception_demo(event):
-    document.querySelector("#output").innerHTML = ""
-    try:
-        demo_type = get_val("sid").strip()
-        if demo_type == "1":
-            raise InvalidStudentError("This is a custom InvalidStudentError")
-        elif demo_type == "2":
-            int("abc") # ValueError
-        elif demo_type == "3":
-            x = 10 / 0 # ZeroDivisionError
-        else:
-            result = "=== Exception Handling Demo ===\n"
-            result += "Enter 1 in Student ID for InvalidStudentError\n"
-            result += "Enter 2 for ValueError\n"
-            result += "Enter 3 for ZeroDivisionError"
-            print_output(result)
-            return
-    except InvalidStudentError as e:
-        print_output(f"Caught Custom Exception:\n{e}", is_error=True)
-    except ValueError as e:
-        print_output(f"Caught ValueError:\n{e}", is_error=True)
-    except ZeroDivisionError as e:
-        print_output(f"Caught ZeroDivisionError:\n{e}", is_error=True)
-    except Exception as e:
-        print_output(f"Caught General Exception:\n{e}", is_error=True)
+
 
 # ---------------- 11. NUMPY ----------------
 def numpy_analysis(event):
@@ -362,9 +367,8 @@ def _5(e): show_update_mode(e)
 @when("click", "#confirm_update_btn")
 def _5b(e): update_course_handler(e)
 @when("click", "#fee_btn")
-def _6(e): fee_handler(e)
+def _6(e): calculate_fee(e)
 @when("click", "#save_btn")
-def _ex(e): exception_demo(e)
 @when("click", "#numpy_btn")
 def _11(e): numpy_analysis(e)
 @when("click", "#pandas_btn")
