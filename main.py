@@ -3,7 +3,8 @@ from js import document, console
 from pyodide.ffi import create_proxy
 import csv
 import io
-from js import Blob, URL, document
+from js import document, console, Blob, URL, Uint8Array
+from pyodide.ffi import to_js  
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -47,26 +48,20 @@ class Student:
 
 # ---------------- HELPER FUNCTIONS ----------------
     
-
-
 def generate_csv_report(e=None):
     try:
-        out = document.getElementById("output")
-        
         if not students:
-            out.innerText = "❌ No students registered. Add students first."
-            return
-            
+            raise InvalidStudentError("No student records to export. Add students first.")
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+
+        # Header
+        writer.writerow(['ID', 'Name', 'Age', 'Course', 'Grade', 'Average_Marks', 'Fee'])
         FEE_STRUCTURE = {
             'BCA': 50000, 'BCOM': 45000, 'BBA': 55000, 
             'BSC': 40000, 'OTHER': 35000
         }
-        
-        # Create CSV in memory instead of file
-        output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow(['ID', 'Name', 'Age', 'Course', 'Grade', 'Average_Marks', 'Fee'])
-        
         for s in students:
             avg = sum(s.marks) / len(s.marks)
             course_key = s.course.upper()
@@ -75,21 +70,31 @@ def generate_csv_report(e=None):
                   FEE_STRUCTURE.get('BBA') if 'BBA' in course_key else \
                   FEE_STRUCTURE.get('BSC') if 'BSC' in course_key else \
                   FEE_STRUCTURE.get('OTHER')
-                  
+
             writer.writerow([s.sid, s.name, s.age, s.course, s.grade, round(avg,2), fee])
+
+        # CRITICAL FIX: Convert string to bytes → Uint8Array for Blob
+        csv_string = output.getvalue()
+        output.close()
         
-        # Create download link
-        csv_content = output.getvalue()
-        blob = Blob.new([csv_content], {"type": "text/csv"})
+        bytes_data = csv_string.encode('utf-8')  # Python str → bytes
+        js_bytes = to_js(bytes_data)             # Python bytes → JS object
+        uint8_array = Uint8Array.new(js_bytes)   # JS object → Uint8Array
+
+        # Create download
+        blob = Blob.new([uint8_array], {type: 'text/csv;charset=utf-8'})
         url = URL.createObjectURL(blob)
-        
-        link = document.getElementById("download_link")
+
+        link = document.createElement('a')
         link.href = url
-        link.download = "student_report.csv"
-        link.click()  # Auto-download
-        
-        out.innerText = f"✅ CSV report generated! Downloaded {len(students)} records."
-        
+        link.download = 'student_report.csv'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+
+        document.getElementById("output").innerText = f"CSV report generated! Downloaded {len(students)} records."
+
     except Exception as err:
         document.getElementById("output").innerText = f"ERROR: {err}"
         console.log(str(err))
